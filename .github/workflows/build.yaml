@@ -1,4 +1,4 @@
-name: Build Home Assistant Custom
+name: Build Custom HA
 
 on:
   schedule:
