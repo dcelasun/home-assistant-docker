@@ -1,4 +1,4 @@
-name: Build Custom HA
+name: Build Home Assistant Custom
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to build (e.g., 2024.1.0). Leave empty to check for new versions.'
+        description: 'Version to build (e.g., 2026.1.0). Leave empty to check for new versions.'
         required: false
         default: ''
 
@@ -26,8 +26,8 @@ jobs:
         id: upstream
         if: inputs.version == ''
         run: |
-          TAGS=$(curl -s "https://api.github.com/repos/home-assistant/docker/releases?per_page=100" \
-            | jq -r '.[].tag_name' \
+          TAGS=$(curl -s "https://hub.docker.com/v2/repositories/homeassistant/home-assistant/tags?page_size=100" \
+            | jq -r '.results[].name' \
             | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
             | sort -V \
             | tail -20)
