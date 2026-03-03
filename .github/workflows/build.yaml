@@ -102,15 +102,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Docker metadata
+        id: meta
+        if: steps.build.outputs.should_build == 'true'
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha
+
       - name: Build and push
         if: steps.build.outputs.should_build == 'true'
         run: |
+          TAG_FLAGS=""
+          while IFS= read -r meta_tag; do
+            [ -n "$meta_tag" ] && TAG_FLAGS="$TAG_FLAGS --tag $meta_tag"
+          done <<< "${{ steps.meta.outputs.tags }}"
+
           while IFS= read -r tag; do
             [ -z "$tag" ] && continue
             echo "Building version: $tag"
             docker buildx build \
               --build-arg HA_VERSION=$tag \
               --tag ${{ env.REGISTRY }}/${{ github.repository }}:$tag \
+              $TAG_FLAGS \
               --push \
               .
           done <<< "${{ steps.build.outputs.tags }}"
